@@ -1,89 +1,50 @@
-import { useEffect, useState } from "react";
-import SearchBar from "./SearchBar/SearchBar";
-import fetchData from "../service/api";
+import { Route, Routes } from "react-router-dom";
 
-import ImageGallery from "./ImageGallery/ImageGallery";
-import Loader from "./Loader/Loader";
-import ErrorMessage from "./ErrorMessage/ErrorMessage";
-import LoadMoreBtn from "./LoadMoreBtn/LoadMoreBtn";
-import ImageModal from "./ImageModal/ImageModal";
+import { Suspense } from "react";
+
+import { DNA } from "react-loader-spinner";
+import { easyLazy } from "../service/easylazy";
+import Navigation from "./Navigation/Navigation";
+import MovieCast from "./MovieCast/MovieCast";
+import MovieReviews from "./MovieReviews.jsx/MovieReviews";
+
+const HomePage = easyLazy("HomePage");
+const MoviesPage = easyLazy("MoviesPage");
+const MovieDetailsPage = easyLazy("MovieDetailsPage");
+const NotFoundPage = easyLazy("NotFoundPage");
 
 const App = () => {
-  const [value, setValue] = useState("");
-  const [photos, setPhotos] = useState([]);
-  const [page, setPage] = useState(1);
-  const [error, setError] = useState(false);
-
-  const [loading, setLoading] = useState(false);
-  const [loadMore, setLoadMore] = useState(false);
-  const [isModal, setIsModal] = useState(false);
-  const [big, setBig] = useState("");
-  const [total, setTotal] = useState("");
-
-  useEffect(() => {
-    if (!value) {
-      return;
-    }
-    const getData = async () => {
-      try {
-        setLoading(true);
-        setError(false);
-
-        const {
-          data: { results, total_pages },
-        } = await fetchData(value, page);
-        if (results.length) {
-          setPhotos((prev) => [...prev, ...results]);
-          setTotal(total_pages);
-          setLoadMore(true);
-        } else {
-          setError(true);
-        }
-      } catch (error) {
-        setError(error.message);
-      } finally {
-        setLoading(false);
-      }
-    };
-    getData();
-  }, [page, value]);
-
-
-  const handleChangePage = () => {
-    setPage((prev) => prev + 1);
-  };
-
-  const handleSearch = (query) => {
-    setValue(query);
-    setPhotos([]);
-    setPage(1);
-  };
-
-  const onCloseModal = () => {
-    setIsModal(false);
-  };
-  const onOpenModal = () => {
-    setIsModal(true);
-  };
-  const handleImageClick = (item) => {
-    setBig(item.urls.regular);
-    onOpenModal();
-  };
   return (
     <div>
-      <SearchBar onSubmit={handleSearch} />
-      {error && <ErrorMessage />}
-      {photos.length > 0 && (
-        <ImageGallery items={photos} setBig={setBig} onBig={handleImageClick} />
-      )}
-      {photos.length > 0 && page < total && (
-        <LoadMoreBtn onClick={() => handleChangePage()} />
-      )}
-      {loading && <Loader />}
-      {isModal && (
-        <ImageModal big={big} onClose={onCloseModal} onOpen={onOpenModal} />
-      )}
+      <Navigation />
+      <Suspense
+        fallback={
+          <div>
+            <DNA
+              visible={true}
+              height="80"
+              width="80"
+              ariaLabel="dna-loading"
+              wrapperStyle={{}}
+              wrapperClass="dna-wrapper"
+            />
+          </div>
+        }
+      >
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+
+          <Route path="/movies" element={<MoviesPage />} />
+          <Route path="/movies/:movieId" element={<MovieDetailsPage />}>
+            <Route path="cast" element={<MovieCast />} />
+            <Route path="reviews" element={<MovieReviews />} />
+          </Route>
+
+          <Route path="*" element={<NotFoundPage />} />
+        </Routes>
+      </Suspense>
     </div>
   );
 };
+
 export default App;

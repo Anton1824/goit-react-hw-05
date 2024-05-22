@@ -1,17 +1,41 @@
 import axios from "axios";
 
-axios.defaults.baseURL = "https://api.unsplash.com/";
-const API_KEY = "TzgAfXB-cV1aSwGxJJg2RXUeUVh9VuNO_22Yb2vWPzo";
+const AUTH_TOKEN =
+  "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJmNDgzMjQ3YzYxYjE5OTFkNzk4ZTg5ZWNhNGY4ODJhMyIsInN1YiI6IjY2MTZkY2NkMjljNjI2MDEzMGExZTE3OCIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.wHci4g4AqvwI0cTD0GayxCLTHkPkGoeRw8HvzG68btQ";
 
-const fetchData = async (searchQuery, page) => {
-  const data = await axios.get("/search/photos", {
+
+axios.defaults.baseURL = "https://api.themoviedb.org/";
+axios.defaults.headers.common["Authorization"] = AUTH_TOKEN;
+
+export const fetchTrendMovies = async () => {
+  const { data } = await axios.get("3/trending/movie/day", {
     params: {
-      client_id: API_KEY,
-      query: searchQuery,
-      per_page: 12,
-      page,
+      language: "en-US",
     },
   });
+  return data.results;
+};
+
+export const fetchMoviesById = async (id) => {
+  const { data } = await axios.get(`3/movie/${id}`);
   return data;
 };
-export default fetchData;
+
+export const fetchCreditsById = async (id) => {
+  const { data } = await axios.get(`3/movie/${id}/credits`);
+  return data;
+};
+
+export const fetchReviewsById = async (id) => {
+  const { data } = await axios.get(`3/movie/${id}/reviews`);
+  return data.results;
+};
+
+export const fetchMoviesByQuery = async (query) => {
+  const { data } = await axios.get("3/search/movie", {
+    params: {
+      query,
+    },
+  });
+  return data.results;
+};
